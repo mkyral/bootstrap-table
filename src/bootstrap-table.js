@@ -2619,9 +2619,14 @@ class BootstrapTable {
     } else if (visible && index > -1) {
       this.hiddenRows.splice(index, 1)
     }
-
-    this.initBody(true)
-    this.initPagination()
+    if (!this.options.pagination) {
+      this.initBody(true)
+    } else if (visible) {
+      this.updatePagination()
+    } else {
+      this.initBody(true)
+      this.initPagination()
+    }
   }
 
   getHiddenRows (show) {

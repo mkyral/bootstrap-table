@@ -1836,7 +1836,7 @@ class BootstrapTable {
             const row = this.data[index]
             const value = row[field]
 
-            event.apply(this, [e, value, row, index])
+            event.apply(this, [e, value, row, index, field])
           })
         })
       }

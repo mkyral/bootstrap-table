@@ -2636,24 +2636,41 @@ class BootstrapTable {
 
   _toggleRow (params, visible) {
     let row
+    let type
+    let indexes
 
     if (params.hasOwnProperty('index')) {
-      row = this.getData()[params.index]
+      type = 'index'
     } else if (params.hasOwnProperty('uniqueId')) {
-      row = this.getRowByUniqueId(params.uniqueId)
+      type = 'uniqueId'
     }
 
-    if (!row) {
-      return
+    if (type === 'index') {
+      indexes = Array.isArray(params.index) ? params.index : [params.index]
+    } else if (type === 'uniqueId') {
+      indexes = Array.isArray(params.uniqueId) ? params.uniqueId : [params.uniqueId]
     }
 
-    const index = Utils.findIndex(this.hiddenRows, row)
+    indexes.forEach(idx => {
 
-    if (!visible && index === -1) {
-      this.hiddenRows.push(row)
-    } else if (visible && index > -1) {
-      this.hiddenRows.splice(index, 1)
-    }
+      if (type === 'index') {
+        row = this.getData()[idx]
+      } else if (type === 'uniqueId') {
+        row = this.getRowByUniqueId(idx)
+      }
+
+      if (row) {
+
+        const index = Utils.findIndex(this.hiddenRows, row)
+
+        if (!visible && index === -1) {
+          this.hiddenRows.push(row)
+        } else if (visible && index > -1) {
+          this.hiddenRows.splice(index, 1)
+        }
+      }
+    })
+
     if (!this.options.pagination) {
       this.initBody(true)
     } else if (visible) {

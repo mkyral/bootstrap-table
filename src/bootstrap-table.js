@@ -2701,26 +2701,34 @@ class BootstrapTable {
   }
 
   showColumn (field) {
+    const indexes = []
     const fields = Array.isArray(field) ? field : [field]
 
     fields.forEach(field => {
-      this._toggleColumn(this.fieldsColumnsIndex[field], true, true)
+      indexes.push(this.fieldsColumnsIndex[field])
     })
+    this._toggleColumn(indexes, true, true)
   }
 
   hideColumn (field) {
+    const indexes = []
     const fields = Array.isArray(field) ? field : [field]
 
     fields.forEach(field => {
-      this._toggleColumn(this.fieldsColumnsIndex[field], false, true)
+      indexes.push(this.fieldsColumnsIndex[field])
     })
+    this._toggleColumn(indexes, false, true)
   }
 
   _toggleColumn (index, checked, needUpdate) {
-    if (index === -1 || this.columns[index].visible === checked) {
-      return
-    }
-    this.columns[index].visible = checked
+    const indexes = Array.isArray(index) ? index : [index]
+
+    indexes.forEach(idx => {
+      if (idx !== -1 && this.columns[idx].visible !== checked) {
+        this.columns[idx].visible = checked
+      }
+    })
+
     this.initHeader()
     this.initSearch()
     this.initPagination()

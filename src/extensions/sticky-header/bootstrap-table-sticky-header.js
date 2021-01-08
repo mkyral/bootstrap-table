@@ -92,11 +92,21 @@ $.BootstrapTable = class extends $.BootstrapTable {
       })
     }
 
+    // Get element to use
+    const mainElement = (this.options.stickyHeaderEnvelope === 'window' ? this.$tableBody : $(this.options.stickyHeaderEnvelope))
+
     const top = $(this.options.stickyHeaderEnvelope).scrollTop()
     // top anchor scroll position, minus header height
     const start = this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY + (this.options.stickyHeaderEnvelope === 'window' ? 0 : $(this.options.stickyHeaderEnvelope).offset().top)
     // bottom anchor scroll position, minus header height, minus sticky height
     const end = this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height()
+
+    // element width
+    const elWidth = mainElement.width()
+
+    const maxScrollLeft = mainElement.get(0).scrollWidth - mainElement.get(0).clientWidth
+
+    const elXPosition = mainElement.scrollLeft()
 
     // show sticky when top anchor touches header, and when bottom anchor not exceeded
     if ((this.options.stickyHeaderEnvelope === window && top > start && top <= end) ||
@@ -108,16 +118,47 @@ $.BootstrapTable = class extends $.BootstrapTable {
       // match bootstrap table style
       this.$stickyContainer.show().addClass('fix-sticky fixed-table-container')
       // stick it in position
-      let stickyHeaderOffsetLeft = this.options.stickyHeaderOffsetLeft
-      let stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight
+      let stickyHeaderOffsetLeft
+      let stickyHeaderOffsetRight
+      let stickyHeaderwidth = elWidth
 
       if (this.$el.closest('.bootstrap-table').hasClass('fullscreen')) {
         stickyHeaderOffsetLeft = 0
         stickyHeaderOffsetRight = 0
+      } else if (elXPosition === 0) {
+        stickyHeaderOffsetLeft = this.options.stickyHeaderOffsetLeft
+        stickyHeaderOffsetRight = 0
+        stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetLeft - this.options.stickyHeaderOffsetRight
+      } else if (elXPosition === maxScrollLeft) {
+        stickyHeaderOffsetLeft = 0
+        stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight
+        stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetLeft - this.options.stickyHeaderOffsetRight
+      } else if (elXPosition < this.options.stickyHeaderOffsetLeft) {
+        stickyHeaderOffsetLeft = this.options.stickyHeaderOffsetLeft - elXPosition
+        stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight
+        stickyHeaderwidth = elWidth - stickyHeaderOffsetLeft - stickyHeaderOffsetRight
+      } else {
+        stickyHeaderOffsetLeft = 0
+        stickyHeaderOffsetRight = 0
+        stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetRight
       }
+
+      /*
+      console.log({ elXPosition })
+      console.log({ elWidth })
+      console.log({ maxScrollLeft })
+      console.log('stickyHeaderOffsetLeft: '.concat(this.options.stickyHeaderOffsetLeft))
+
+      console.log({ stickyHeaderOffsetLeft })
+      console.log({ stickyHeaderOffsetRight })
+      console.log({ stickyHeaderwidth })
+      */
+
       this.$stickyContainer.css('top', ''.concat(this.options.stickyHeaderOffsetY), 'px')
-      this.$stickyContainer.css('left', `${stickyHeaderOffsetLeft}`)
-      this.$stickyContainer.css('right', `${stickyHeaderOffsetRight}`)
+      this.$stickyContainer.css('left', ''.concat(stickyHeaderOffsetLeft, 'px'))
+      this.$stickyContainer.css('right', ''.concat(stickyHeaderOffsetRight, 'px'))
+      this.$stickyContainer.css('width', ''.concat(stickyHeaderwidth, 'px'))
+
       // create scrollable container for header
       this.$stickyTable = $('<table/>')
       this.$stickyTable.addClass(this.options.classes)
@@ -131,6 +172,6 @@ $.BootstrapTable = class extends $.BootstrapTable {
   }
 
   shMatchPositionX () {
-    this.$stickyContainer.scrollLeft(this.options.stickyHeaderEnvelope === 'window' ? this.$tableBody.scrollLeft() : $(this.options.stickyHeaderEnvelope).scrollLeft())
+    this.$stickyContainer.scrollLeft((this.options.stickyHeaderEnvelope === 'window' ? this.$tableBody.scrollLeft() : $(this.options.stickyHeaderEnvelope).scrollLeft()) - this.options.stickyHeaderOffsetLeft)
   }
 }

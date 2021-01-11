@@ -69,7 +69,6 @@ $.BootstrapTable = class extends $.BootstrapTable {
   renderStickyHeader () {
     const that = this
 
-    console.log('renderStickyHeader')
     this.$stickyHeader = this.$header.clone(true, true)
 
     if (this.options.filterControl) {

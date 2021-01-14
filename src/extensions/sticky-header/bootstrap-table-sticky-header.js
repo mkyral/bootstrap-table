@@ -94,14 +94,25 @@ $.BootstrapTable = class extends $.BootstrapTable {
     // Get element to use
     const mainElement = (this.options.stickyHeaderEnvelope === 'window' ? this.$tableBody : $(this.options.stickyHeaderEnvelope))
 
-    const top = $(this.options.stickyHeaderEnvelope).scrollTop()
+    const top = mainElement.scrollTop()
     // top anchor scroll position, minus header height
     const start = this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY + (this.options.stickyHeaderEnvelope === 'window' ? 0 : $(this.options.stickyHeaderEnvelope).offset().top)
     // bottom anchor scroll position, minus header height, minus sticky height
     const end = this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height()
 
     // element width
-    const elWidth = mainElement.width()
+    let elWidth = mainElement.width()
+
+    // table width
+    const tblWidth = this.$tableBody.width()
+
+    // Table is narrower than page
+    let narrower = false
+
+    if (tblWidth < elWidth) {
+      elWidth = tblWidth
+      narrower = true
+    }
 
     const maxScrollLeft = mainElement.get(0).scrollWidth - mainElement.get(0).clientWidth
 
@@ -124,19 +135,23 @@ $.BootstrapTable = class extends $.BootstrapTable {
       if (this.$el.closest('.bootstrap-table').hasClass('fullscreen')) {
         stickyHeaderOffsetLeft = 0
         stickyHeaderOffsetRight = 0
-      } else if (elXPosition === 0) {
+      } else if (elXPosition === 0) { // no scroll
         stickyHeaderOffsetLeft = this.options.stickyHeaderOffsetLeft
         stickyHeaderOffsetRight = 0
         stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetLeft - this.options.stickyHeaderOffsetRight
-      } else if (elXPosition === maxScrollLeft) {
+      } else if (elXPosition === maxScrollLeft) { // max scroll
         stickyHeaderOffsetLeft = 0
         stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight
         stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetLeft - this.options.stickyHeaderOffsetRight
-      } else if (elXPosition < this.options.stickyHeaderOffsetLeft) {
+      } else if (elXPosition < this.options.stickyHeaderOffsetLeft) { // small scroll - less than left offset
         stickyHeaderOffsetLeft = this.options.stickyHeaderOffsetLeft - elXPosition
         stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight
         stickyHeaderwidth = elWidth - stickyHeaderOffsetLeft - stickyHeaderOffsetRight
-      } else {
+      } else if ((maxScrollLeft - elXPosition) < this.options.stickyHeaderOffsetRight) { // almost max scroll - less than rigt offset
+        stickyHeaderOffsetLeft = 0
+        stickyHeaderOffsetRight = this.options.stickyHeaderOffsetRight + this.options.stickyHeaderOffsetRight - (maxScrollLeft - elXPosition)
+        stickyHeaderwidth = elWidth - stickyHeaderOffsetRight
+      } else { // inside scroll - do not cover scrollbar
         stickyHeaderOffsetLeft = 0
         stickyHeaderOffsetRight = 0
         stickyHeaderwidth = elWidth - this.options.stickyHeaderOffsetRight
@@ -156,7 +171,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
       this.$stickyContainer.css('top', ''.concat(this.options.stickyHeaderOffsetY), 'px')
       this.$stickyContainer.css('left', ''.concat(stickyHeaderOffsetLeft, 'px'))
       this.$stickyContainer.css('right', ''.concat(stickyHeaderOffsetRight, 'px'))
-      this.$stickyContainer.css('width', ''.concat(stickyHeaderwidth, 'px'))
+      this.$stickyContainer.css('width', ''.concat((narrower ? elWidth : stickyHeaderwidth), 'px'))
 
       // create scrollable container for header
       this.$stickyTable = $('<table/>')

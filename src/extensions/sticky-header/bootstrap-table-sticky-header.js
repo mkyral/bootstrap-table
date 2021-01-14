@@ -188,6 +188,11 @@ $.BootstrapTable = class extends $.BootstrapTable {
   }
 
   shMatchPositionX () {
+
+    if (!this.options.stickyHeader) {
+      return
+    }
+
     this.$stickyContainer.scrollLeft((this.options.stickyHeaderEnvelope === 'window' ? this.$tableBody.scrollLeft() : $(this.options.stickyHeaderEnvelope).scrollLeft()) - this.options.stickyHeaderOffsetLeft)
   }
 }

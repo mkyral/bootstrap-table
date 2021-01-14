@@ -107,8 +107,10 @@ $.BootstrapTable = class extends $.BootstrapTable {
     // show sticky when top anchor touches header, and when bottom anchor not exceeded
     if (top > start && top <= end) {
       // ensure clone and source column widths are the same
-      this.$stickyHeader.find('tr:eq(0)').find('th').each((index, el) => {
-        $(el).css('min-width', this.$header.find('tr:eq(0)').find('th').eq(index).css('width'))
+      this.$stickyHeader.find('tr').each(ridx => {
+        this.$stickyHeader.find(''.concat('tr:eq(', ridx, ')')).find('th').each((index, el) => {
+          $(el).css('min-width', this.$header.find(''.concat('tr:eq(', ridx, ')')).find('th').eq(index).css('width'))
+        })
       })
       // match bootstrap table style
       this.$stickyContainer.show().addClass('fix-sticky fixed-table-container')

@@ -41,7 +41,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
     $(window).off(resizeEvent).on(resizeEvent, () => this.renderStickyHeader())
     $(window).off(scrollEvent).on(scrollEvent, () => this.renderStickyHeader())
-    this.$tableBody.off('scroll').on('scroll', () => this.matchPositionX())
+    this.$tableBody.off('scroll').on('scroll', () => this.shMatchPositionX())
   }
 
   onColumnSearch ({ currentTarget, keyCode }) {
@@ -70,7 +70,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   horizontalScroll () {
     super.horizontalScroll()
-    this.$tableBody.on('scroll', () => this.matchPositionX())
+    this.$tableBody.on('scroll', () => this.shMatchPositionX())
   }
 
   renderStickyHeader () {
@@ -141,13 +141,13 @@ $.BootstrapTable = class extends $.BootstrapTable {
       // append cloned header to dom
       this.$stickyContainer.html(this.$stickyTable.append(this.$stickyHeader))
       // match clone and source header positions when left-right scroll
-      this.matchPositionX()
+      this.shMatchPositionX()
     } else {
       this.$stickyContainer.removeClass('fix-sticky').hide()
     }
   }
 
-  matchPositionX () {
+  shMatchPositionX () {
     this.$stickyContainer.scrollLeft(this.$tableBody.scrollLeft())
   }
 }

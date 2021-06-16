@@ -10,7 +10,8 @@ $.extend($.fn.bootstrapTable.defaults, {
   stickyHeader: false,
   stickyHeaderOffsetY: 0,
   stickyHeaderOffsetLeft: 0,
-  stickyHeaderOffsetRight: 0
+  stickyHeaderOffsetRight: 0,
+  stickyHeaderEnvelope: 'window'
 })
 
 $.BootstrapTable = class extends $.BootstrapTable {
@@ -40,7 +41,7 @@ $.BootstrapTable = class extends $.BootstrapTable {
     const scrollEvent = Utils.getEventName('scroll.sticky-header-table', this.$el.attr('id'))
 
     $(window).off(resizeEvent).on(resizeEvent, () => this.renderStickyHeader())
-    $(window).off(scrollEvent).on(scrollEvent, () => this.renderStickyHeader())
+    $(this.options.stickyHeaderEnvelope).off(scrollEvent).on(scrollEvent, () => this.renderStickyHeader())
     this.$tableBody.off('scroll').on('scroll', () => this.shMatchPositionX())
   }
 
@@ -70,7 +71,11 @@ $.BootstrapTable = class extends $.BootstrapTable {
 
   horizontalScroll () {
     super.horizontalScroll()
-    this.$tableBody.on('scroll', () => this.shMatchPositionX())
+    if (this.options.stickyHeaderEnvelope === 'window') {
+      this.$tableBody.on('scroll', () => this.shMatchPositionX())
+    } else {
+      $(this.options.stickyHeaderEnvelope).on('scroll', () => this.shMatchPositionX())
+    }
   }
 
   renderStickyHeader () {
@@ -98,14 +103,15 @@ $.BootstrapTable = class extends $.BootstrapTable {
       })
     }
 
-    const top = $(window).scrollTop()
+    const top = $(this.options.stickyHeaderEnvelope).scrollTop()
     // top anchor scroll position, minus header height
-    const start = this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY
+    const start = this.$stickyBegin.offset().top - this.options.stickyHeaderOffsetY + (this.options.stickyHeaderEnvelope === 'window' ? 0 : $(this.options.stickyHeaderEnvelope).offset().top)
     // bottom anchor scroll position, minus header height, minus sticky height
     const end = this.$stickyEnd.offset().top - this.options.stickyHeaderOffsetY - this.$header.height()
 
     // show sticky when top anchor touches header, and when bottom anchor not exceeded
-    if (top > start && top <= end) {
+    if ((this.options.stickyHeaderEnvelope === 'window' && top > start && top <= end) ||
+        (top > start)) {
       // ensure clone and source column widths are the same
       this.$stickyHeader.find('tr').each(ridx => {
         this.$stickyHeader.find(''.concat('tr:eq(', ridx, ')')).find('th').each((index, el) => {
